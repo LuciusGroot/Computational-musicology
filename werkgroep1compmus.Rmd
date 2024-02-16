@@ -1,0 +1,65 @@
+---
+title: "demo markdown"
+output: html_document
+date: "2024-02-14"
+---
+```{r}
+library(tidyverse)
+library(spotifyr)
+juditha <- get_track_audio_features(c("2M5b9YLAgFroqWzeaZf86e", "3DBKc4ioGnMQLlbGQcFDIO"))
+alla <- get_album_tracks("7oI0E3DdTbD85rhMg19GSU")
+gilberto <- get_artist_audio_features("gilberto gil")
+ecm <- get_playlist_audio_features("", "1zN4nK6oHMo2dei2WWPtSL")
+grammy <- get_playlist_audio_features("", "6ufHkRP9eCM6w9xbdfwG0q")
+edison <- get_playlist_audio_features("", "37i9dQZF1DX8mnKbIkppDf")
+awards <-
+  bind_rows(
+    grammy |> mutate(category = "Grammys"),
+    edison |> mutate(category = "Edisons")
+  )
+grammy |> ggplot(aes(x = energy)) + geom_histogram(binwidth = 0.1) #histogram
+
+awards |> #awards edison grammys
+  ggplot(aes(x = energy)) +
+  geom_histogram(binwidth = 0.1) +
+  facet_wrap(~category)
+
+awards |> #box plot github
+  ggplot(aes(x = category, y = energy)) +
+  geom_boxplot()
+
+#violin plot, soort van box plot maar dan viool vorm
+awards |>
+  ggplot(aes(x = category, y = energy)) +
+  geom_violin()
+
+#geom_jitter(); curve met stippeltjes
+grammy |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth()
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
