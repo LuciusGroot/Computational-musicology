@@ -1,0 +1,188 @@
+---
+title: "Lucius Groot Homework Week 7"
+output: html_document
+date: "2024-02-14"
+---
+```{r}
+```
+I start this with loading the library: tidyverse and spotifyr
+```{r}
+library(tidyverse)
+library(spotifyr)
+```
+I need the listss, which are 2 at this moment. 
+The first lists consist of music that I used to listen between the age 2 till 12. All of these are stored at home in CD's or are DVD's showtunes intro.
+The second lists is my weekly discovery, which is based on my current taste in music (mostly musical theatre songs and jazz/fusion/pop/rock/country etc, too much to sum up).
+I am using short cuts for both the lists, which I also will make in the following chunck
+
+```{r}
+      #Uploading "Music of Lucius' Childhood" to RStudios via URL; this lists contains the songs I have at home in CD form and showtunes          from TV shows.
+MoLC <- get_playlist_audio_features("", "7E5lKSGKAhGwQZaftQViGz") 
+        
+      #uploading "Discover Weekly on 14 February 2024 of Lucius' Spotify" via URL. 
+dw0 <- get_playlist_audio_features("", "37i9dQZEVXcIgiZXlwTluc") 
+
+#shortcut for "Music of Lucius' Childhood" and "Discover Weekly on 14 February 2024 of Lucius' Spotify"
+lists <-
+  bind_rows(
+    MoLC |> mutate(category = "Music of Lucius' Childhood"),
+    dw0 |> mutate(category = "discovery weekly week 0 of Lucius")
+  )
+```
+The summary I let Rstudio made of both the lists:
+I am interested how fast discover weekly will be adapted to the results of my childhood music
+```{r}
+#summary of "Discover Weekly on 14 February 2024 of Lucius' Spotify"
+dw0 |>
+  summarise(
+    mean_speechiness = mean(speechiness),
+    mean_acousticness = mean(acousticness),
+    mean_liveness = mean(liveness),
+    sd_speechiness = sd(speechiness),
+    sd_acousticness = sd(acousticness),
+    sd_liveness = sd(liveness),
+    median_speechiness = median(speechiness),
+    median_acousticness = median(acousticness),
+    median_liveness = median(liveness),
+    mad_speechiness = mad(speechiness),
+    mad_acousticness = mad(acousticness),
+    mad_liveness = mad(liveness)
+  ) 
+
+#summary of  "Music of Lucius' Childhood"
+MoLC |>
+  summarise(
+    mean_speechiness = mean(speechiness),
+    mean_acousticness = mean(acousticness),
+    mean_liveness = mean(liveness),
+    sd_speechiness = sd(speechiness),
+    sd_acousticness = sd(acousticness),
+    sd_liveness = sd(liveness),
+    median_speechiness = median(speechiness),
+    median_acousticness = median(acousticness),
+    median_liveness = median(liveness),
+    mad_speechiness = mad(speechiness),
+    mad_acousticness = mad(acousticness),
+    mad_liveness = mad(liveness)
+  )
+
+#I do not know how I can facet this one unfortunately
+```
+I want to know of both the lists:
+Valence versus energy + the mode
+```{r}
+  #the plots combined
+ggplot(lists, aes(x = valence, y = energy, color = mode )) +
+  geom_point(size = 1) +
+  geom_segment(aes(xend = valence, yend = energy), size = 0.1) + 
+  facet_wrap(~category) + 
+   ggtitle("plot of my listss, valence versus energy combined with mode")
+
+  #the plots individual: dw0
+ggplot(dw0, aes(valence, energy)) +
+  geom_point(aes(colour= mode)) +
+  scale_y_log10() +
+   ggtitle("plot of discovery weekly week 0 of Lucius, valence versus energy combined with mode")
+
+  #the plots individual: MoLC
+ggplot(JM, aes(x = valence, y = energy, color = mode)) +
+  geom_point() +
+  ggtitle("plot of Music of Lucius Childhood, valence versus energy combined with mode")
+
+```
+I want to know of both the lists:
+Valence versus energy + the mode, but with a smooth curve, so I can see an average
+
+```{r}
+  #the plots combined
+lists |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() + 
+  facet_wrap(~category) + 
+  ggtitle("Smoothcurve of my listss, valence versus energy combined with mode")
+  
+  #the plots individual: dw0 
+dw0 |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
+    ggtitle("Smoothcurve of dw0, valence versus energy combined with mode")
+
+  #the plots individual: MoLC
+MoLC |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
+    ggtitle("Smoothcurve of Music of Lucius Childhood, valence versus energy combined with mode")
+
+```
+``` 
+I took some inspiration of the homework for my longest code ever
+```
+```{r}
+#making 2 plots in one plot, i want to compare my weekly discovery with computational musicology playlist
+lists |>                    #I started with the 2 playlists
+  mutate(
+    mode = ifelse(mode == 0, "Minor", "Major")
+  ) |>
+  ggplot(                     #This is the code I used for making the plot with ggplot2, i took inspiration from the assignment during the class
+    aes(
+      x = valence,
+      y = energy,
+      size = loudness,
+      colour = mode
+    )
+  ) +
+  geom_point() +              #first I tried to make a scatterplot
+  geom_rug(linewidth = 0.02) + #deciding that the border is 0.02
+  geom_text(                  #valence versus energy labels
+    aes(
+      x = valence,
+      y = energy,
+      label = label
+    ),
+    data = 
+      tibble(
+        label = c("", "  "),
+        category = c("Music of Lucius' Childhood"),
+        valence = c(0.104, 0.0339),
+        energy = c(0.992, 0.00166)
+      ),
+    colour = "black",         #colour of the plot is black
+    size = 4,                 #i want the size of the plot to be 4
+    hjust = "left",           #i was making left side
+    vjust = "center",         #i was making right side
+    nudge_x = 0.02            #i wanted to place the label slightly to the right
+  ) +
+  facet_wrap(~ category) +    #i decided that i wanted to use both my playlist in two plots in one, again
+  scale_x_continuous(         #i decided to fine-tune the x axis
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),   #i used grid-lines for quadrants only.
+    minor_breaks = NULL       #i wanted to remove 'minor' grid-lines.
+  ) +
+  scale_y_continuous(         #i fine-tuned the y axis in the same way.
+    limits = c(0, 1),
+    breaks = c(0, 0.50, 1),
+    minor_breaks = NULL
+  ) +
+  scale_colour_brewer(        #the color brewer i used for making a was palette
+    type = "qual",            #i have a qualitative set
+    palette = "Paired"        #i named the palette to 'Paired'
+  ) +
+  scale_size_continuous(      #i decided to also fine-tune the sizes of each point
+    trans = "exp",            #i used an exp transformation to emphasise loud
+    guide = "none"            #i remove the legend for size, did not need it
+  ) +
+  theme_light() +             #making the theme light
+  labs(
+    x = "Valence",
+    y = "Energy",
+    colour = "Mode"
+  )
+
+```
+The histogram I made about both the lists:
+```{r}
+#histogram of discovery weekly week 0 and Lucius & Music of Lucius' Childhood together in one plot
+lists |>
+  ggplot(aes(x = energy)) +
+  geom_histogram(binwidth = 0.1) +
+  facet_wrap(~category) + ggtitle("discovery weekly week 0 and Lucius & Music of Lucius' Childhood")
+```
+What do I want to know? 
+Will all the next Discovery weekly lists become more as Music of Lucius's Childhood? 
+Which kind of songs will spotify recommend?
+Which codes can I use the best
+Will spotify recommend disney or more music with Dutch as language instead of English or music animatie compagnie (work i used to listen during a job at a camping in the holidays)
