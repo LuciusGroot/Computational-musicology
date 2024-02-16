@@ -9,4 +9,6 @@ I begin listening more and more to musical theatre songs on spotify since 2017, 
 I would also like to know which code I can use for this, but I will hopefully learn that during this course.
 I can also see how my music taste has changed and compare it, which I find interesting to see.
 
+I could not upload pictures of my plots, I do not know why, but it did not work. 
+
 Kind regards, Lucius Groot 
