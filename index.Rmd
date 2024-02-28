@@ -305,7 +305,7 @@ Which codes can I use the best
 Will spotify recommend disney or more music with Dutch as language instead of English or music animatie compagnie (work i used to listen during a job at a camping in the holidays)
 
 
-### Conclusion and discussion
+### Conclusion and 
 
 While reloading the dataset, I saw that there has been a sudden change in the results of my weekly discovery. The playlist of discovery weekly is updating every week. I did not know that the URL stays the same. This means that I lost my information about my last week's discovery weekly. I will be making a playlist of the songs, so I will not loose it again.
 
