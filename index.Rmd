@@ -11,28 +11,6 @@ output:
 ---
 
 
-### Introduction
-
-Dear Reader,
-
-For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made 4 playlists with different versions of 4'33''. The first playlist contains all the 57 versions I could find on Spotify, some of them are just parts of the pieces. The 2nd playlist are all the version made and played/performed by John Cage. The 3rd playlist are the versions that do not give credits to John Cage, but has the same or a similar name. The 4th playlist consist of interpretation of 4'33''.
-
-
-The lists that I use are these list:
-Playlist 1: https://open.spotify.com/playlist/34a7macvtzIMePk2fRq4oC?si=78984ccde61a4f44 
-Playlist 2: https://open.spotify.com/playlist/5sWJTo3Zxy9oTf5CCqc624?si=2db9da0f122a49ae
-Playlist 3: https://open.spotify.com/playlist/7qwMKRYgTiRLOLszqDYyj9?si=76be1e131ac94e7d
-Playlist 4:https://open.spotify.com/playlist/383bBCxqKWd8tpvWrU9yYH?si=ae28a61a0874436b
-
-These are the libraries that I use:
-library(tidyverse)
-library(spotifyr)
-library(compmus)
-
-I hope that I have informed you well enough and enjoy reading my analysis of 4'33"'s.
-
-Kind regards, Lucius Groot
-
 ```{r}
 library(tidyverse)
 library(spotifyr)
@@ -574,6 +552,27 @@ Map track 2, 6, 10 and 4 in order of most to least have a similar magnitude arou
 It is noticable tht there is a magnitude around c03 in track 3 and 7.
 Track 5 could again be another piece.
 
+### Introduction
+
+Dear Reader,
+
+For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made 4 playlists with different versions of 4'33''. The first playlist contains all the 57 versions I could find on Spotify, some of them are just parts of the pieces. The 2nd playlist are all the version made and played/performed by John Cage. The 3rd playlist are the versions that do not give credits to John Cage, but has the same or a similar name. The 4th playlist consist of interpretation of 4'33''.
+
+
+The lists that I use are these list:
+Playlist 1: https://open.spotify.com/playlist/34a7macvtzIMePk2fRq4oC?si=78984ccde61a4f44 
+Playlist 2: https://open.spotify.com/playlist/5sWJTo3Zxy9oTf5CCqc624?si=2db9da0f122a49ae
+Playlist 3: https://open.spotify.com/playlist/7qwMKRYgTiRLOLszqDYyj9?si=76be1e131ac94e7d
+Playlist 4:https://open.spotify.com/playlist/383bBCxqKWd8tpvWrU9yYH?si=ae28a61a0874436b
+
+These are the libraries that I use:
+library(tidyverse)
+library(spotifyr)
+library(compmus)
+
+I hope that I have informed you well enough and enjoy reading my analysis of 4'33"'s.
+
+Kind regards, Lucius Groot
 
 
 ### week 8
