@@ -14,12 +14,6 @@ library(tidyverse)
 library(spotifyr)
 library(compmus)
 ```
-
-```{r}
-#The code so the chords and keys are working!
-#The playlists of my corpus!
-
-```
 ```{r}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
@@ -166,6 +160,8 @@ mapbjc4 <- create_mapbjc_track("0AQRAsPtKDHCv369ktkp3x")
 mapbjc5 <- create_mapbjc_track("3jb5L9viOhEoYuVbfpvlhA")
 mapbjc6 <- create_mapbjc_track("4JRtsjsSqunh2ILro1EAhH")
 mapbjc7 <- create_mapbjc_track("0EOT1qmisxEi2MDJ6DaWHT")
+
+
 mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
 ```
 
@@ -272,6 +268,22 @@ Kind regards, Lucius Groot
 
 I do not know what happened, but my work after week 9 stopped with working and I am stressing right now.
 ```{r}
+mapbjc1 |>
+  compmus_self_similarity(timbre, "cosine") |> 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "") + ggtitle("mapbjc track 1")
 
 mapbjc2 |>
   compmus_self_similarity(timbre, "cosine") |> 
@@ -397,10 +409,8 @@ mapbjc10 |>
 
 ***
 Here is my comparison for track 1 till 7 and 10 with a structure analysis of the playlist in which only John Cage is credited on Spotify.
-
 1. Is the original, you can see that it exist out of 3 parts. Track 3 is the closest (if you follow the big lines) in form to track 1. The other tracks are just all over the place and some of them could be a total different piece.
-
-Edit: Track No. 1 decided to disappear, so it is 2 till 7 and 10, i do not know how i should fix this.
+Edit: Track No. 1 decided to disappear, so it is 2 till 7 and 10, i do not know how i should fix this. I FIXED IT, IT IS BACK!
 
 
 ### Week 9 sceptrogram
