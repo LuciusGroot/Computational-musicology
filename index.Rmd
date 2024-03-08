@@ -9,69 +9,17 @@ output:
     
 
 ---
-
-
 ```{r}
 library(tidyverse)
 library(spotifyr)
 library(compmus)
 ```
 
+```{r}
+#The code so the chords and keys are working!
+#The playlists of my corpus!
 
-```{r, echo=FALSE}
-circshift <- function(v, n) {
-  if (n == 0) v else c(tail(v, n), head(v, -n))
-}
-
-#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
-major_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
-minor_chord <-
-  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
-seventh_chord <-
-  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
-
-chord_templates <-
-  tribble(
-    ~name, ~template,
-    "Gb:7", circshift(seventh_chord, 6),
-    "Gb:maj", circshift(major_chord, 6),
-    "Bb:min", circshift(minor_chord, 10),
-    "Db:maj", circshift(major_chord, 1),
-    "F:min", circshift(minor_chord, 5),
-    "Ab:7", circshift(seventh_chord, 8),
-    "Ab:maj", circshift(major_chord, 8),
-    "C:min", circshift(minor_chord, 0),
-    "Eb:7", circshift(seventh_chord, 3),
-    "Eb:maj", circshift(major_chord, 3),
-    "G:min", circshift(minor_chord, 7),
-    "Bb:7", circshift(seventh_chord, 10),
-    "Bb:maj", circshift(major_chord, 10),
-    "D:min", circshift(minor_chord, 2),
-    "F:7", circshift(seventh_chord, 5),
-    "F:maj", circshift(major_chord, 5),
-    "A:min", circshift(minor_chord, 9),
-    "C:7", circshift(seventh_chord, 0),
-    "C:maj", circshift(major_chord, 0),
-    "E:min", circshift(minor_chord, 4),
-    "G:7", circshift(seventh_chord, 7),
-    "G:maj", circshift(major_chord, 7),
-    "B:min", circshift(minor_chord, 11),
-    "D:7", circshift(seventh_chord, 2),
-    "D:maj", circshift(major_chord, 2),
-    "F#:min", circshift(minor_chord, 6),
-    "A:7", circshift(seventh_chord, 9),
-    "A:maj", circshift(major_chord, 9),
-    "C#:min", circshift(minor_chord, 1),
-    "E:7", circshift(seventh_chord, 4),
-    "E:maj", circshift(major_chord, 4),
-    "G#:min", circshift(minor_chord, 8),
-    "B:7", circshift(seventh_chord, 11),
-    "B:maj", circshift(major_chord, 11),
-    "D#:min", circshift(minor_chord, 3)
-  )
 ```
-
 ```{r}
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
@@ -160,8 +108,6 @@ key_templates <-
   )
 
 ```
-
-
 ```{r}
 #All (4'33'') I could find.
 aic <- get_playlist_audio_features("", "34a7macvtzIMePk2fRq4oC") 
@@ -175,11 +121,9 @@ nmopbjc <- get_playlist_audio_features("", "7qwMKRYgTiRLOLszqDYyj9")
  #433corpus_made_by_johncage_but_not_performed
 mbjcbnp <- get_playlist_audio_features("", "383bBCxqKWd8tpvWrU9yYH") 
 
- #10 versions with the same length
-t10 <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE")
+ #433corpus_with_the_exact_length
+cwtel <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE")
 ```
-
-
 ```{r}
 #shortcut for the 4 playlists 
 sc <-
@@ -189,8 +133,6 @@ sc <-
     mbjcbnp |> mutate(category = "Made but not performed by John Cage")
   )
 ```
-
-
 ```{r}
 create_mapbjc_track <- function(track_id) {
   track_data <- get_tidy_audio_analysis(track_id)
@@ -215,8 +157,6 @@ create_mapbjc_track <- function(track_id) {
   return(aligned_data)
 }
 ```
-
-
 ```{r}
 # Example usage:
 mapbjc1 <- create_mapbjc_track("2bNCdW4rLnCTzgqUXTTDO1")
@@ -231,8 +171,7 @@ mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
 
 
 
-
-### Week 10
+### Week 10 
 ```{r}
 # Function to create matched pitch plot
 create_matched_pitch_plot <- function(track_id, chord_templates, key_templates, method = "euclidean", norm = "manhattan") {
@@ -273,11 +212,7 @@ create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templat
 
 ***
 This is of the 1st track in the made and played album, the original 4'33''. There is no musical sound, so it is weird that you can see al these dominant chords. If you know how I can change the scale/colours, let me know; I want the plot to be as realistic as possible.
-
 I did not had enough time to put a story of what I did in the codes; because my portfolio decided to stop working; so I had to rewrite the whole document and I almost decided to drop this course, because 1 week went well with the homework so far.
-
-
-
 
 ### week 10
 ```{r}
@@ -315,8 +250,8 @@ create_mapbjc_pitch_match_plot(mapbjc10, key_templates, method = "euclidean", no
 
 ***
 These are the 1st till 7th and 10th of the made and played track. No8 and No9 did not work. I do not know why.
-
 Same story as the other one of these week.
+If you know how I can make all the plot the same length and width, please let me know; I tried something and it did not work.
 
 
 ### Introduction
@@ -819,7 +754,7 @@ mbjcbnp |>
   )
 
 #summary of  "10 versions of the same length"
-t10 |>
+cwtel |>
   summarise(
     mean_speechiness = mean(speechiness),
     mean_acousticness = mean(acousticness),
@@ -897,7 +832,7 @@ ggplot(mbjcbnp, aes(valence, energy)) +
    ggtitle("Made but not played")
 
 #Plot of the 10 version's 
-ggplot(t10, aes(valence, energy)) +
+ggplot(cwtel, aes(valence, energy)) +
   geom_point(aes(colour= mode)) +
   scale_y_log10() +
    ggtitle("Plot of 10 versions of the same length")
@@ -939,7 +874,7 @@ mbjcbnp |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
     ggtitle("Made but not performed")
 
 #the plots individual: 10 versions
-t10 |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
+cwtel |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
     ggtitle("10 versions")
 
 
@@ -1016,19 +951,15 @@ sc |>                    # Start with shortcut of all the playlists
   )
 
 ```
-***
 
+***
 I took some inspiration of the homework for my longest code ever
 
 
 
 ### Histogram of the lists
-
-
 The histogram I made about both the lists:
 
-
-  
 ```{r}
 #histogram of everything i could find
 sc |>
@@ -1052,7 +983,7 @@ mbjcbnp |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("4'33''")
 
-t10 |>
+cwtel |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("4'33''")
 ```
