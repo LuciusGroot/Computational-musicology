@@ -1,5 +1,5 @@
 ---
-title: "portfolio"
+title: "4'33''"
 author: "Lucius Groot"
 date: "2024-02-21"
 output: 
@@ -15,256 +15,330 @@ output:
 library(tidyverse)
 library(spotifyr)
 library(compmus)
+```
 
-#All (4'33'') I could find.
-aic <- get_playlist_audio_features("", "34a7macvtzIMePk2fRq4oC") 
 
- #Made and performed by John Cage
-map <- get_playlist_audio_features("", "5sWJTo3Zxy9oTf5CCqc624") 
-       
- #Covers/Interpretation of 4'33'' who did not credit John Cage
-ciwc <- get_playlist_audio_features("", "7qwMKRYgTiRLOLszqDYyj9") 
+```{r, echo=FALSE}
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
 
- #Made but not performed by John Cage
-mnp <- get_playlist_audio_features("", "383bBCxqKWd8tpvWrU9yYH") 
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
 
- #10 versions with the same length
-t10 <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE") 
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Db:maj", circshift(major_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "A:min", circshift(minor_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "D#:min", circshift(minor_chord, 3)
+  )
+```
 
- 
+```{r}
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
 
-#shortcut for the 4 playlists 
-sc <-
-  bind_rows(
-    map |> mutate(category = "Made and performed"),
-    ciwc |> mutate(category = "Covers/Interpretation without credits to John Cage"),
-    mnp |> mutate(category = "Made but not performed by John Cage")
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+
+major_key <-
+  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
+minor_key <-
+  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Db:maj", circshift(major_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "A:min", circshift(minor_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "D#:min", circshift(minor_chord, 3)
   )
 
-
-
-#Shortcut made and performed by (map)
-map1 <-
-  get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-
-map1 <-
-  get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
-  compmus_align(bars, segments) |>
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"              
-      )
-  )
-
-map2 <-
-  get_tidy_audio_analysis("5B7HHrAsopOgp3wjP0PMgT") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-
-map2 <-
-  get_tidy_audio_analysis("5B7HHrAsopOgp3wjP0PMgT") |> 
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-map3 <-
-  get_tidy_audio_analysis("4F76YbFSTzXboAKhyypE7a") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map3 <-
-  get_tidy_audio_analysis("4F76YbFSTzXboAKhyypE7a") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-
-map4 <-
-  get_tidy_audio_analysis("0AQRAsPtKDHCv369ktkp3x") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map4 <-
-  get_tidy_audio_analysis("0AQRAsPtKDHCv369ktkp3x") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-
-map5 <-
-  get_tidy_audio_analysis("3jb5L9viOhEoYuVbfpvlhA") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map5 <-
-  get_tidy_audio_analysis("3jb5L9viOhEoYuVbfpvlhA") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-
-map6 <-
-  get_tidy_audio_analysis("4JRtsjsSqunh2ILro1EAhH") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map6 <-
-  get_tidy_audio_analysis("4JRtsjsSqunh2ILro1EAhH") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-
-map7 <-
-  get_tidy_audio_analysis("0EOT1qmisxEi2MDJ6DaWHT") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map7 <-
-  get_tidy_audio_analysis("0EOT1qmisxEi2MDJ6DaWHT") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
-  )
-
-map8 <-
-  get_tidy_audio_analysis("0eBgJxMleTWezJZPciCqdO") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-
-
-map9 <-
-  get_tidy_audio_analysis("52QLogPTXh3KJI7JwjG2vP") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-
-
-map10 <-
-  get_tidy_audio_analysis("18KH1UVb7HMWaesDkTsyhS") |>
-  select(segments) |>
-  unnest(segments) |>
-  select(start, duration, pitches)
-map10 <-
-  get_tidy_audio_analysis("18KH1UVb7HMWaesDkTsyhS") |>
-  compmus_align(bars, segments) |>                     
-  select(bars) |>
-  unnest(bars) |>
-  mutate(
-    pitches =
-      map(segments,
-        compmus_summarise, pitches,
-        method = "rms", norm = "euclidean"              
-      )
-  ) |>
-  mutate(
-    timbre =
-      map(segments,
-        compmus_summarise, timbre,
-        method = "rms", norm = "euclidean"             
-      )
+key_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:maj", circshift(major_key, 6),
+    "Bb:min", circshift(minor_key, 10),
+    "Db:maj", circshift(major_key, 1),
+    "F:min", circshift(minor_key, 5),
+    "Ab:maj", circshift(major_key, 8),
+    "C:min", circshift(minor_key, 0),
+    "Eb:maj", circshift(major_key, 3),
+    "G:min", circshift(minor_key, 7),
+    "Bb:maj", circshift(major_key, 10),
+    "D:min", circshift(minor_key, 2),
+    "F:maj", circshift(major_key, 5),
+    "A:min", circshift(minor_key, 9),
+    "C:maj", circshift(major_key, 0),
+    "E:min", circshift(minor_key, 4),
+    "G:maj", circshift(major_key, 7),
+    "B:min", circshift(minor_key, 11),
+    "D:maj", circshift(major_key, 2),
+    "F#:min", circshift(minor_key, 6),
+    "A:maj", circshift(major_key, 9),
+    "C#:min", circshift(minor_key, 1),
+    "E:maj", circshift(major_key, 4),
+    "G#:min", circshift(minor_key, 8),
+    "B:maj", circshift(major_key, 11),
+    "D#:min", circshift(minor_key, 3)
   )
 
 ```
 
-### week 9 self similarity
 
 ```{r}
- map1 |>
+#All (4'33'') I could find.
+aic <- get_playlist_audio_features("", "34a7macvtzIMePk2fRq4oC") 
+
+ #433corpus_made_and_performed_by_johncage
+mapbjc <- get_playlist_audio_features("", "5sWJTo3Zxy9oTf5CCqc624") 
+       
+ #433corpus_not_made_or_performed_by_johncage 
+nmopbjc <- get_playlist_audio_features("", "7qwMKRYgTiRLOLszqDYyj9") 
+
+ #433corpus_made_by_johncage_but_not_performed
+mbjcbnp <- get_playlist_audio_features("", "383bBCxqKWd8tpvWrU9yYH") 
+
+ #10 versions with the same length
+t10 <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE")
+```
+
+
+```{r}
+#shortcut for the 4 playlists 
+sc <-
+  bind_rows(
+    mapbjc |> mutate(category = "Made and performed"),
+    nmopbjc |> mutate(category = "Covers/Interpretation without credits to John Cage"),
+    mbjcbnp |> mutate(category = "Made but not performed by John Cage")
+  )
+```
+
+
+```{r}
+create_mapbjc_track <- function(track_id) {
+  track_data <- get_tidy_audio_analysis(track_id)
+  
+  aligned_data <- track_data |>
+    compmus_align(bars, segments) |>
+    select(bars) |>
+    unnest(bars) |>
+    mutate(
+      pitches =
+        map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"
+        ),
+      timbre =
+        map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"
+        )
+    )
+  
+  return(aligned_data)
+}
+```
+
+
+```{r}
+# Example usage:
+mapbjc1 <- create_mapbjc_track("2bNCdW4rLnCTzgqUXTTDO1")
+mapbjc2 <- create_mapbjc_track("5B7HHrAsopOgp3wjP0PMgT")
+mapbjc3 <- create_mapbjc_track("4F76YbFSTzXboAKhyypE7a")
+mapbjc4 <- create_mapbjc_track("0AQRAsPtKDHCv369ktkp3x")
+mapbjc5 <- create_mapbjc_track("3jb5L9viOhEoYuVbfpvlhA")
+mapbjc6 <- create_mapbjc_track("4JRtsjsSqunh2ILro1EAhH")
+mapbjc7 <- create_mapbjc_track("0EOT1qmisxEi2MDJ6DaWHT")
+mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
+```
+
+
+
+
+### Week 10
+```{r}
+# Function to create matched pitch plot
+create_matched_pitch_plot <- function(track_id, chord_templates, key_templates, method = "euclidean", norm = "manhattan") {
+  track_data <- get_tidy_audio_analysis(track_id)
+
+  matched_pitch_data <- track_data |>
+    compmus_align(bars, segments) |>
+    select(bars) |>
+    unnest(bars) |>
+    mutate(
+      pitches =
+        map(segments,
+            compmus_summarise, pitches,
+            method = "mean", norm = "manhattan"
+        )
+    ) |> 
+    compmus_match_pitch_template(chord_templates, method, norm)
+
+  ggplot(matched_pitch_data,
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")
+}
+
+
+
+create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
+
+
+
+
+```
+
+
+
+***
+This is of the 1st track in the made and played album, the original 4'33''. There is no musical sound, so it is weird that you can see al these dominant chords. If you know how I can change the scale/colours, let me know; I want the plot to be as realistic as possible.
+
+I did not had enough time to put a story of what I did in the codes; because my portfolio decided to stop working; so I had to rewrite the whole document and I almost decided to drop this course, because 1 week went well with the homework so far.
+
+
+
+
+### week 10
+```{r}
+# Function to create matched pitch data and plot
+create_mapbjc_pitch_match_plot <- function(track_data, key_templates, method = "euclidean", norm = "manhattan") {
+  matched_pitch_data <- track_data |>
+    compmus_match_pitch_template(
+      key_templates,
+      method = method,
+      norm = norm
+    )
+
+  matched_pitch_data |>
+    ggplot(
+      aes(x = start + duration / 2, width = duration, y = name, fill = d)
+    ) +
+    geom_tile() +
+    scale_fill_viridis_c(guide = "none") +
+    theme_minimal() +
+    labs(x = "Time (s)", y = "")
+}
+
+# Create and plot matched pitch data for mapbjc1 to mapbjc7
+create_mapbjc_pitch_match_plot(mapbjc1, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc2, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc3, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc4, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc5, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc6, key_templates, method = "euclidean", norm = "manhattan")
+create_mapbjc_pitch_match_plot(mapbjc7, key_templates, method = "euclidean", norm = "manhattan")
+
+create_mapbjc_pitch_match_plot(mapbjc10, key_templates, method = "euclidean", norm = "manhattan")
+
+```
+
+***
+These are the 1st till 7th and 10th of the made and played track. No8 and No9 did not work. I do not know why.
+
+Same story as the other one of these week.
+
+
+### Introduction
+
+My corpus is in reversed order! I will fix this, after week 11.
+
+Dear Reader,
+
+For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made a playlist with different versions of 4'33''. In 2010, John Cage released a new album with different versions of 4'33'' (he died in 1992, so I do not know whether he made it, but it is in his spotify). I will also use that playlist.
+
+I also would like to compare this song with another extreme song or a genre which is the opposite, but I cannot think of a song or genre. If you know something, it would help me a lot!
+
+Kind regards, Lucius Groot
+
+
+
+### week 9?
+
+I do not know what happened, but my work after week 9 stopped with working and I am stressing right now.
+```{r}
+
+mapbjc2 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -279,9 +353,9 @@ map10 <-
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 1")
+  labs(x = "", y = "") + ggtitle("mapbjc track 2")
 
-map2 |>
+mapbjc3 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -296,9 +370,9 @@ map2 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 2")
+  labs(x = "", y = "") + ggtitle("mapbjc track 3")
 
-map3 |>
+mapbjc4 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -313,9 +387,9 @@ map3 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 3")
+  labs(x = "", y = "") + ggtitle("mapbjc track 4")
 
-map4 |>
+mapbjc5 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -330,9 +404,9 @@ map4 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 4")
+  labs(x = "", y = "") + ggtitle("mapbjc track 5")
 
-map5 |>
+mapbjc6 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -347,9 +421,9 @@ map5 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 5")
+  labs(x = "", y = "") + ggtitle("mapbjc track 6")
 
-map6 |>
+mapbjc7 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -364,9 +438,10 @@ map6 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 6")
+  labs(x = "", y = "") + ggtitle("mapbjc track 7")
 
-map7 |>
+
+mapbjc10 |>
   compmus_self_similarity(timbre, "cosine") |> 
   ggplot(
     aes(
@@ -381,25 +456,7 @@ map7 |>
   coord_fixed() +
   scale_fill_viridis_c(guide = "none") +
   theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 7")
-
-
-map10 |>
-  compmus_self_similarity(timbre, "cosine") |> 
-  ggplot(
-    aes(
-      x = xstart + xduration / 2,
-      width = xduration,
-      y = ystart + yduration / 2,
-      height = yduration,
-      fill = d
-    )
-  ) +
-  geom_tile() +
-  coord_fixed() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_classic() +
-  labs(x = "", y = "") + ggtitle("Map track 10")
+  labs(x = "", y = "") + ggtitle("mapbjc track 10")
 
 ```
 
@@ -408,12 +465,14 @@ Here is my comparison for track 1 till 7 and 10 with a structure analysis of the
 
 1. Is the original, you can see that it exist out of 3 parts. Track 3 is the closest (if you follow the big lines) in form to track 1. The other tracks are just all over the place and some of them could be a total different piece.
 
+Edit: Track No. 1 decided to disappear, so it is 2 till 7 and 10, i do not know how i should fix this.
+
 
 ### Week 9 sceptrogram
 
 ```{r}
-# For Map 1
-map1 |>
+# For mapbjc 1
+mapbjc1 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -426,10 +485,10 @@ map1 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 1")
+  theme_classic() + ggtitle("mapbjc track 1")
 
-# For Map 2
-map2 |>
+# For mapbjc 2
+mapbjc2 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -442,10 +501,10 @@ map2 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 2")
+  theme_classic() + ggtitle("mapbjc track 2")
 
-# For Map 3
-map3 |>
+# For mapbjc 3
+mapbjc3 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -458,10 +517,10 @@ map3 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 3") 
+  theme_classic() + ggtitle("mapbjc track 3") 
 
-# For Map 4
-map4 |>
+# For mapbjc 4
+mapbjc4 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -474,10 +533,10 @@ map4 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 4")
+  theme_classic() + ggtitle("mapbjc track 4")
 
-# For Map 5
-map5 |>
+# For mapbjc 5
+mapbjc5 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -490,10 +549,10 @@ map5 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 5")
+  theme_classic() + ggtitle("mapbjc track 5")
  
-# For Map 6
-map6 |>
+# For mapbjc 6
+mapbjc6 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -506,10 +565,10 @@ map6 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 6")
+  theme_classic() + ggtitle("mapbjc track 6")
 
-# For Map 7
-map7 |>
+# For mapbjc 7
+mapbjc7 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -522,12 +581,12 @@ map7 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 8")
+  theme_classic() + ggtitle("mapbjc track 8")
 
 
 
-# For Map 10
-map10 |>
+# For mapbjc 10
+mapbjc10 |>
   compmus_gather_timbre() |>
   ggplot(
     aes(
@@ -540,59 +599,37 @@ map10 |>
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   scale_fill_viridis_c() +
-  theme_classic() + ggtitle("Map track 10")
+  theme_classic() + ggtitle("mapbjc track 10")
 
 ```
 
-
 ***
-You can see very clear in map1 that there is a magnitude of 0 around c01. c02 has the highest magnitude overall. 
+You can see very clear in mapbjc1 that there is a magnitude of 0 around c01. c02 has the highest magnitude overall. 
 
-Map track 2, 6, 10 and 4 in order of most to least have a similar magnitude aroung c02.
+mapbjc track 2, 6, 10 and 4 in order of most to least have a similar magnitude aroung c02.
 It is noticable tht there is a magnitude around c03 in track 3 and 7.
 Track 5 could again be another piece.
 
-### Introduction
-
-Dear Reader,
-
-For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made 4 playlists with different versions of 4'33''. The first playlist contains all the 57 versions I could find on Spotify, some of them are just parts of the pieces. The 2nd playlist are all the version made and played/performed by John Cage. The 3rd playlist are the versions that do not give credits to John Cage, but has the same or a similar name. The 4th playlist consist of interpretation of 4'33''.
-
-
-The lists that I use are these list:
-Playlist 1: https://open.spotify.com/playlist/34a7macvtzIMePk2fRq4oC?si=78984ccde61a4f44 
-Playlist 2: https://open.spotify.com/playlist/5sWJTo3Zxy9oTf5CCqc624?si=2db9da0f122a49ae
-Playlist 3: https://open.spotify.com/playlist/7qwMKRYgTiRLOLszqDYyj9?si=76be1e131ac94e7d
-Playlist 4:https://open.spotify.com/playlist/383bBCxqKWd8tpvWrU9yYH?si=ae28a61a0874436b
-
-These are the libraries that I use:
-library(tidyverse)
-library(spotifyr)
-library(compmus)
-
-I hope that I have informed you well enough and enjoy reading my analysis of 4'33"'s.
-
-Kind regards, Lucius Groot
 
 
 ### week 8
 ```{r}
-##map track 1
-map1 <-
+##mapbjc track 1
+mapbjc1 <-
   get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
   select(segments) |>
   unnest(segments) |>
   select(start, duration, pitches) 
 
-##map track 2
-map2 <-
+##mapbjc track 2
+mapbjc2 <-
   get_tidy_audio_analysis("5B7HHrAsopOgp3wjP0PMgT") |>
   select(segments) |>
   unnest(segments) |>
   select(start, duration, pitches) 
 
-##map track 3
-map3 <-
+##mapbjc track 3
+mapbjc3 <-
   get_tidy_audio_analysis("4F76YbFSTzXboAKhyypE7a") |>
   select(segments) |>
   unnest(segments) |>
@@ -600,8 +637,8 @@ map3 <-
 
 
 compmus_long_distance(
-  map1 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
-  map2 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc1 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc2 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
   feature = pitches,
   method = "euclidean"
 ) |>
@@ -616,13 +653,13 @@ compmus_long_distance(
   ) +
   geom_tile() +
   coord_equal() +
-  labs(x = "map track 1", y = "map track 2") +
+  labs(x = "mapbjc track 1", y = "mapbjc track 2") +
   theme_minimal() +
   scale_fill_viridis_c(guide = NULL)
 
 compmus_long_distance(
-  map1 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
-  map3 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc1 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc3 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
   feature = pitches,
   method = "euclidean"
 ) |>
@@ -637,13 +674,13 @@ compmus_long_distance(
   ) +
   geom_tile() +
   coord_equal() +
-  labs(x = "map track 2", y = "map track 3") +
+  labs(x = "mapbjc track 2", y = "mapbjc track 3") +
   theme_minimal() +
   scale_fill_viridis_c(guide = NULL)
 
 compmus_long_distance(
-  map2 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
-  map3 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc2 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
+  mapbjc3 |> mutate(pitches = map(pitches, compmus_normalise, "chebyshev")),
   feature = pitches,
   method = "euclidean"
 ) |>
@@ -658,184 +695,44 @@ compmus_long_distance(
   ) +
   geom_tile() +
   coord_equal() +
-  labs(x = "map track 2", y = "map track 3") +
+  labs(x = "mapbjc track 2", y = "mapbjc track 3") +
   theme_minimal() +
   scale_fill_viridis_c(guide = NULL)
 ```
 
-
 ### Week 8 part2
 
 ```{r}
-# For Map 1
-map1 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 1")
+create_map_plot <- function(data, track_number) {
+  data %>%
+    mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+    compmus_gather_chroma() %>%
+    ggplot(
+      aes(
+        x = start + duration / 2,
+        width = duration,
+        y = pitch_class,
+        fill = value
+      )
+    ) +
+    geom_tile() +
+    labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+    theme_minimal() +
+    scale_fill_viridis_c() + 
+    ggtitle(paste("mapbjc track", track_number))
+}
 
-# For Map 2
-map2 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 2")
+# Example usage:
+create_map_plot(mapbjc1, 1)
+create_map_plot(mapbjc2, 2)
+create_map_plot(mapbjc3, 3)
+create_map_plot(mapbjc4, 4)
+create_map_plot(mapbjc5, 5)
+create_map_plot(mapbjc6, 6)
+create_map_plot(mapbjc7, 7)
 
-# For Map 3
-map3 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 3")
+create_map_plot(mapbjc10, 10)
 
-# For Map 4
-map4 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 4")
-
-# For Map 5
-map5 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value 
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 5")
-
-# For Map 6
-map6 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 6")
-
-# For Map 7
-map7 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 7")
-
-# For Map 8
-map8 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 8")
-
-# For Map 9
-map9 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 9")
-
-# For Map 10
-map10 |>
-  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) |>
-  compmus_gather_chroma() |> 
-  ggplot(
-    aes(
-      x = start + duration / 2,
-      width = duration,
-      y = pitch_class,
-      fill = value
-    )
-  ) +
-  geom_tile() +
-  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
-  theme_minimal() +
-  scale_fill_viridis_c() + ggtitle("Map track 10")
 
 
 
@@ -843,7 +740,7 @@ map10 |>
 
 
 ***
-I do not know what I can conclude from the map tracks; but apparently every 4'33'' has its own key; while I cannot hear a key if I am listening.
+I do not know what I can conclude from the mapbjc tracks; but apparently every 4'33'' has its own key; while I cannot hear a key if I am listening.
 
 
 
@@ -871,7 +768,7 @@ aic |>
   ) 
 
 #summary of  "Made and performed"
-map |>
+mapbjc |>
   summarise(
     mean_speechiness = mean(speechiness),
     mean_acousticness = mean(acousticness),
@@ -888,7 +785,7 @@ map |>
   )
 
 #summary of  "cover/interpration without credits"
-ciwc |>
+nmopbjc |>
   summarise(
     mean_speechiness = mean(speechiness),
     mean_acousticness = mean(acousticness),
@@ -905,7 +802,7 @@ ciwc |>
   )
 
 #summary of  "Made not performed"
-mnp |>
+mbjcbnp |>
   summarise(
     mean_speechiness = mean(speechiness),
     mean_acousticness = mean(acousticness),
@@ -955,9 +852,8 @@ sc |>
     mad_acousticness = mad(acousticness),
     mad_liveness = mad(liveness)
   )
-
-
 ```
+
 
 ***
 The summary I let Rstudio made of my lists:
@@ -965,7 +861,6 @@ It is possible to make a summary of 4'33'', but not if there are too many songs 
 
 
   
-
 
 ### Valence/Energy/Mode
 
@@ -984,19 +879,19 @@ ggplot(aic, aes(valence, energy)) +
 
  
   #The plot of the different versions made and performed by John Cage
-ggplot(map, aes(valence, energy)) +
+ggplot(mapbjc, aes(valence, energy)) +
   geom_point(aes(colour= mode)) +
   scale_y_log10() +
    ggtitle("Made and performed")
 
   #Plot of different covers
-ggplot(ciwc, aes(valence, energy)) +
+ggplot(nmopbjc, aes(valence, energy)) +
   geom_point(aes(colour= mode)) +
   scale_y_log10() +
    ggtitle("Covers/Interpretation without credits")
 
 #Plot of version made but not played by John Cage
-ggplot(mnp, aes(valence, energy)) +
+ggplot(mbjcbnp, aes(valence, energy)) +
   geom_point(aes(colour= mode)) +
   scale_y_log10() +
    ggtitle("Made but not played")
@@ -1030,17 +925,17 @@ aic |> ggplot(aes(x = valence, y = energy, color = mode)) +
   ggtitle("All I could find")
 
   #Made and performed
-map |> ggplot(aes(x = valence, y = energy, color = mode)) + 
+mapbjc |> ggplot(aes(x = valence, y = energy, color = mode)) + 
   geom_point() + 
   geom_smooth(span = 0.5) +  #idk what this does
   ggtitle("Made and performed")
 
   #Cover/Interpretation without credits
-ciwc |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
+nmopbjc |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
     ggtitle("Cover/Interpretation without credits")
 
   #Made but not performed by John Cage
-mnp |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
+mbjcbnp |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
     ggtitle("Made but not performed")
 
 #the plots individual: 10 versions
@@ -1054,7 +949,6 @@ t10 |> ggplot(aes(x = valence, y = energy)) + geom_point() + geom_smooth() +
 *** 
 I want to know of both the lists:
 How can there be a key? What makes that there are different energies and how can some be negative?
-
 
 
 ### The code of the homework week 7
@@ -1146,15 +1040,15 @@ aic |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("all i could find")
 
-map |>
+mapbjc |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("4'33''")
 
-ciwc |>
+nmopbjc |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("4'33''")
 
-mnp |>
+mbjcbnp |>
   ggplot(aes(x = energy)) +
   geom_histogram(binwidth = 0.005) + ggtitle("4'33''")
 
