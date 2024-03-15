@@ -13,6 +13,8 @@ output:
 library(tidyverse)
 library(spotifyr)
 library(compmus)
+library(purrr)
+library(dplyr)
 ```
 ```{r}
 circshift <- function(v, n) {
@@ -167,13 +169,6 @@ create_mapbjc_track <- function(track_id) {
 track_ids <- c("2bNCdW4rLnCTzgqUXTTDO1", "5B7HHrAsopOgp3wjP0PMgT", "4F76YbFSTzXboAKhyypE7a", "0AQRAsPtKDHCv369ktkp3x", "3jb5L9viOhEoYuVbfpvlhA", "4JRtsjsSqunh2ILro1EAhH", "0EOT1qmisxEi2MDJ6DaWHT", "0eBgJxMleTWezJZPciCqdO", "52QLogPTXh3KJI7JwjG2vP", "0EOT1qmisxEi2MDJ6DaWHT" )
 
 
-```
-
-
-```{r}
-library(purrr)
-library(dplyr)
-
 # Assume you have chord_templates defined as shown in a previous conversation
 
 # Define the function to create a mapbjc track
@@ -218,52 +213,7 @@ mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
 
 ```
 
-
-
-### Week 10 
-```{r}
-# Function to create matched pitch plot
-create_matched_pitch_plot <- function(track_id, chord_templates, key_templates, method = "euclidean", norm = "manhattan") {
-  track_data <- get_tidy_audio_analysis(track_id)
-
-  matched_pitch_data <- track_data |>
-    compmus_align(bars, segments) |>
-    select(bars) |>
-    unnest(bars) |>
-    mutate(
-      pitches =
-        map(segments,
-            compmus_summarise, pitches,
-            method = "mean", norm = "manhattan"
-        )
-    ) |> 
-    compmus_match_pitch_template(chord_templates, method, norm)
-
-  ggplot(matched_pitch_data,
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", y = "")
-}
-
-
-
-create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
-create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
-
-
-
-
-```
-
-***
-This is of the 1st track in the made and played album, the original 4'33''. There is no musical sound, so it is weird that you can see al these dominant chords. If you know how I can change the scale/colours, let me know; I want the plot to be as realistic as possible.
-I did not had enough time to put a story of what I did in the codes; because my portfolio decided to stop working; so I had to rewrite the whole document and I almost decided to drop this course, because 1 week went well with the homework so far.
-
-### week 11
-
+### week 11 
 ```{r}
 mapbjc1.0 <-
   get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
@@ -306,9 +256,7 @@ mapbjc1.0 |>
   xlim(0, 300) +
   theme_minimal() +
   labs(x = "Time (s)", y = "Novelty")
-```
 
-```{r}
 mapbjc1.0 <- get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1")
 
 mapbjc1.0 |>
@@ -329,12 +277,67 @@ mapbjc1.0|>
 
 ```
 
+***
+All of these plot are 4'33'' of John Cage (the original version). The tempogram is also of the same song. It is interesting to see that Rstudios can see a tempo? Even though it is silence. Is there anyone who have an idea how this is possible?
 
-```
+
+### Introduction
+
+My corpus is in reversed order! I will fix this, after week 11.
+
+Dear Reader,
+
+For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made a playlist with different versions of 4'33''. In 2010, John Cage released a new album with different versions of 4'33'' (he died in 1992, so I do not know whether he made it, but it is in his spotify). I will also use that playlist.
+
+I also would like to compare this song with another extreme song or a genre which is the opposite, but I cannot think of a song or genre. If you know something, it would help me a lot!
+
+Kind regards, Lucius Groot
 
 
 ### week 10
 ```{r}
+# Function to create matched pitch plot
+create_matched_pitch_plot <- function(track_id, chord_templates, key_templates, method = "euclidean", norm = "manhattan") {
+  track_data <- get_tidy_audio_analysis(track_id)
+
+  matched_pitch_data <- track_data |>
+    compmus_align(bars, segments) |>
+    select(bars) |>
+    unnest(bars) |>
+    mutate(
+      pitches =
+        map(segments,
+            compmus_summarise, pitches,
+            method = "mean", norm = "manhattan"
+        )
+    ) |> 
+    compmus_match_pitch_template(chord_templates, method, norm)
+
+  ggplot(matched_pitch_data,
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "")
+}
+
+
+
+create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
+create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
+
+
+
+
+```
+
+***
+This is of the 1st track in the made and played album, the original 4'33''. There is no musical sound, so it is weird that you can see al these dominant chords. If you know how I can change the scale/colours, let me know; I want the plot to be as realistic as possible.
+I did not had enough time to put a story of what I did in the codes; because my portfolio decided to stop working; so I had to rewrite the whole document and I almost decided to drop this course, because 1 week went well with the homework so far.
+
+```{r}
+
 #Function to create matched pitch data and plot
 create_mapbjc_pitch_match_plot <- function(track_data, key_templates, method = "euclidean", norm = "manhattan") {
   matched_pitch_data <- track_data |>
@@ -371,19 +374,6 @@ create_mapbjc_pitch_match_plot(mapbjc10, key_templates, method = "euclidean", no
 These are the 1st till 7th and 10th of the made and played track. No8 and No9 did not work. I do not know why.
 Same story as the other one of these week.
 If you know how I can make all the plot the same length and width, please let me know; I tried something and it did not work.
-
-
-### Introduction
-
-My corpus is in reversed order! I will fix this, after week 11.
-
-Dear Reader,
-
-For this project, I want to analyse different versions of the musical piece: 4'33'' by John Cage. 4'33'' is a piece made by John Cage. It is not my favourite song, but it questions perfectly what music is and what it can be. I am interested in which information I can get about the different versions, by analysing it with Rstudios. That is why I made a playlist with different versions of 4'33''. In 2010, John Cage released a new album with different versions of 4'33'' (he died in 1992, so I do not know whether he made it, but it is in his spotify). I will also use that playlist.
-
-I also would like to compare this song with another extreme song or a genre which is the opposite, but I cannot think of a song or genre. If you know something, it would help me a lot!
-
-Kind regards, Lucius Groot
 
 
 
@@ -936,9 +926,6 @@ I want to know of both the lists:
 Valence versus energy + the mode
 
 ```{r}
- 
-
- 
 #The three lists combined
 ggplot(aic, aes(valence, energy)) +
   geom_point(aes(colour= mode)) +
@@ -1094,6 +1081,7 @@ I took some inspiration of the homework for my longest code ever
 The histogram I made about both the lists:
 
 ```{r}
+
 #histogram of everything i could find
 sc |>
   ggplot(aes(x = energy)) +
@@ -1124,5 +1112,8 @@ cwtel |>
 ***
 nothing special
 
+```{r}
+
+```
 
 ### conclusion
