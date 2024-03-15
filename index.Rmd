@@ -101,8 +101,6 @@ key_templates <-
     "D#:min", circshift(minor_key, 3)
   )
 
-```
-```{r}
 #All (4'33'') I could find.
 aic <- get_playlist_audio_features("", "34a7macvtzIMePk2fRq4oC") 
 
@@ -117,8 +115,7 @@ mbjcbnp <- get_playlist_audio_features("", "383bBCxqKWd8tpvWrU9yYH")
 
  #433corpus_with_the_exact_length
 cwtel <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE")
-```
-```{r}
+
 #shortcut for the 4 playlists 
 sc <-
   bind_rows(
@@ -126,8 +123,7 @@ sc <-
     nmopbjc |> mutate(category = "Covers/Interpretation without credits to John Cage"),
     mbjcbnp |> mutate(category = "Made but not performed by John Cage")
   )
-```
-```{r}
+
 create_mapbjc_track <- function(track_id) {
   track_data <- get_tidy_audio_analysis(track_id)
   
@@ -150,8 +146,66 @@ create_mapbjc_track <- function(track_id) {
   
   return(aligned_data)
 }
+
+library(purrr)
+
+# Define the function to create a mapbjc track
+create_mapbjc_track <- function(track_id) {
+  track_data <- get_tidy_audio_analysis(track_id)
+  
+  matched_pitch_data <- track_data %>%
+    compmus_align(bars, segments) %>%
+    mutate(
+      pitches = map(segments, compmus_summarise, pitches, method = "mean", norm = "manhattan")
+    ) %>%
+    compmus_match_pitch_template(chord_templates, "euclidean", "manhattan")
+  
+  return(matched_pitch_data)
+}
+
+# List of track IDs
+track_ids <- c("2bNCdW4rLnCTzgqUXTTDO1", "5B7HHrAsopOgp3wjP0PMgT", "4F76YbFSTzXboAKhyypE7a", "0AQRAsPtKDHCv369ktkp3x", "3jb5L9viOhEoYuVbfpvlhA", "4JRtsjsSqunh2ILro1EAhH", "0EOT1qmisxEi2MDJ6DaWHT", "0eBgJxMleTWezJZPciCqdO", "52QLogPTXh3KJI7JwjG2vP", "0EOT1qmisxEi2MDJ6DaWHT" )
+
+
 ```
+
+
 ```{r}
+library(purrr)
+library(dplyr)
+
+# Assume you have chord_templates defined as shown in a previous conversation
+
+# Define the function to create a mapbjc track
+
+
+create_mapbjc_track <- function(track_id) {
+  track_data <- get_tidy_audio_analysis(track_id)
+  
+  aligned_data <- track_data |>
+    compmus_align(bars, segments) |>
+    select(bars) |>
+    unnest(bars) |>
+    mutate(
+      pitches =
+        map(segments,
+          compmus_summarise, pitches,
+          method = "rms", norm = "euclidean"
+        ),
+      timbre =
+        map(segments,
+          compmus_summarise, timbre,
+          method = "rms", norm = "euclidean"
+        )
+    )
+  
+  return(aligned_data)
+}
+
+
+# List of track IDs
+track_ids <- c("2bNCdW4rLnCTzgqUXTTDO1", "5B7HHrAsopOgp3wjP0PMgT", "4F76YbFSTzXboAKhyypE7a", "0AQRAsPtKDHCv369ktkp3x", "3jb5L9viOhEoYuVbfpvlhA", "4JRtsjsSqunh2ILro1EAhH", "0EOT1qmisxEi2MDJ6DaWHT", "0eBgJxMleTWezJZPciCqdO", "52QLogPTXh3KJI7JwjG2vP", "0EOT1qmisxEi2MDJ6DaWHT")
+
 # Example usage:
 mapbjc1 <- create_mapbjc_track("2bNCdW4rLnCTzgqUXTTDO1")
 mapbjc2 <- create_mapbjc_track("5B7HHrAsopOgp3wjP0PMgT")
@@ -160,9 +214,8 @@ mapbjc4 <- create_mapbjc_track("0AQRAsPtKDHCv369ktkp3x")
 mapbjc5 <- create_mapbjc_track("3jb5L9viOhEoYuVbfpvlhA")
 mapbjc6 <- create_mapbjc_track("4JRtsjsSqunh2ILro1EAhH")
 mapbjc7 <- create_mapbjc_track("0EOT1qmisxEi2MDJ6DaWHT")
-
-
 mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
+
 ```
 
 
@@ -198,21 +251,91 @@ create_matched_pitch_plot <- function(track_id, chord_templates, key_templates, 
 
 
 create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
+create_matched_pitch_plot("2bNCdW4rLnCTzgqUXTTDO1", chord_templates, key_templates, method = "euclidean", norm = "manhattan") 
 
 
 
 
 ```
 
-
-
 ***
 This is of the 1st track in the made and played album, the original 4'33''. There is no musical sound, so it is weird that you can see al these dominant chords. If you know how I can change the scale/colours, let me know; I want the plot to be as realistic as possible.
 I did not had enough time to put a story of what I did in the codes; because my portfolio decided to stop working; so I had to rewrite the whole document and I almost decided to drop this course, because 1 week went well with the homework so far.
 
+### week 11
+
+```{r}
+mapbjc1.0 <-
+  get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
+  select(segments) |>
+  unnest(segments)
+
+mapbjc1.0 |>
+  mutate(loudness_max_time = start + loudness_max_time) |>
+  arrange(loudness_max_time) |>
+  mutate(delta_loudness = loudness_max - lag(loudness_max)) |>
+  ggplot(aes(x = loudness_max_time, y = pmax(0, delta_loudness))) +
+  geom_line() +
+  xlim(0, 300) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+mapbjc1.0 |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  arrange(start) |>
+  mutate(pitches = map2(pitches, lag(pitches), `-`)) |>
+  slice(-1) |> 
+  compmus_gather_chroma() |> 
+  group_by(start, duration) |> 
+  summarise(novelty = sum(log1p(pmax(value, 0)))) |> 
+  ggplot(aes(x = start + duration / 2, y = novelty)) +
+  geom_line() +
+  xlim(0, 300) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+
+mapbjc1.0 |>
+  arrange(start) |>
+  mutate(timbre = map2(timbre, lag(timbre), `-`)) |>
+  slice(-1) |>
+  compmus_gather_timbre() |>
+  group_by(start, duration) |> 
+  summarise(novelty = sum(log1p(pmax(value, 0)))) |> 
+  ggplot(aes(x = start + duration / 2, y = novelty)) +
+  geom_line() +
+  xlim(0, 300) +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "Novelty")
+```
+
+```{r}
+mapbjc1.0 <- get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1")
+
+mapbjc1.0 |>
+  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+mapbjc1.0|>
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) |>
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+```
+
+
+```
+
+
 ### week 10
 ```{r}
-# Function to create matched pitch data and plot
+#Function to create matched pitch data and plot
 create_mapbjc_pitch_match_plot <- function(track_data, key_templates, method = "euclidean", norm = "manhattan") {
   matched_pitch_data <- track_data |>
     compmus_match_pitch_template(
