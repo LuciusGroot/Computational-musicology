@@ -9,18 +9,23 @@ output:
     
 
 ---
+
 ```{r}
+#Library
 library(tidyverse)
 library(spotifyr)
 library(compmus)
 library(purrr)
 library(dplyr)
-```
-```{r}
+library(purrr)
+library(tidymodels)
+library(ggdendro)
+library(heatmaply)
+
+#circshift
 circshift <- function(v, n) {
   if (n == 0) v else c(tail(v, n), head(v, -n))
 }
-
 #      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
 major_chord <-
   c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
@@ -28,12 +33,12 @@ minor_chord <-
   c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
 seventh_chord <-
   c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
-
 major_key <-
   c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
 minor_key <-
   c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
 
+#Chord_template
 chord_templates <-
   tribble(
     ~name, ~template,
@@ -74,6 +79,7 @@ chord_templates <-
     "D#:min", circshift(minor_chord, 3)
   )
 
+#key_template
 key_templates <-
   tribble(
     ~name, ~template,
@@ -102,23 +108,23 @@ key_templates <-
     "B:maj", circshift(major_key, 11),
     "D#:min", circshift(minor_key, 3)
   )
+```
 
-#All (4'33'') I could find.
-aic <- get_playlist_audio_features("", "34a7macvtzIMePk2fRq4oC") 
 
+```{r}
+###Shortcuts for the playlists:
+  #433corpus_complete! 
+aic <- get_playlist_audio_features("", "3ItGc1nDDikyt9X1MgYwGi") 
  #433corpus_made_and_performed_by_johncage
 mapbjc <- get_playlist_audio_features("", "5sWJTo3Zxy9oTf5CCqc624") 
-       
  #433corpus_not_made_or_performed_by_johncage 
 nmopbjc <- get_playlist_audio_features("", "7qwMKRYgTiRLOLszqDYyj9") 
-
  #433corpus_made_by_johncage_but_not_performed
 mbjcbnp <- get_playlist_audio_features("", "383bBCxqKWd8tpvWrU9yYH") 
-
  #433corpus_with_the_exact_length
 cwtel <- get_playlist_audio_features("", "7uZC9eTFcWrVxQIHhy45IE")
 
-#shortcut for the 4 playlists 
+#shortcut for the 3 playlists (basically the same as 'aic'):
 sc <-
   bind_rows(
     mapbjc |> mutate(category = "Made and performed"),
@@ -126,30 +132,29 @@ sc <-
     mbjcbnp |> mutate(category = "Made but not performed by John Cage")
   )
 
-create_mapbjc_track <- function(track_id) {
-  track_data <- get_tidy_audio_analysis(track_id)
-  
-  aligned_data <- track_data |>
-    compmus_align(bars, segments) |>
-    select(bars) |>
-    unnest(bars) |>
-    mutate(
-      pitches =
-        map(segments,
-          compmus_summarise, pitches,
-          method = "rms", norm = "euclidean"
-        ),
-      timbre =
-        map(segments,
-          compmus_summarise, timbre,
-          method = "rms", norm = "euclidean"
-        )
-    )
-  
-  return(aligned_data)
-}
+###week 12 code behind the scene:
+corpus433complete <-
+  get_playlist_audio_features("433corpus_complete", "3ItGc1nDDikyt9X1MgYwGi") |>
+  add_audio_analysis() |>
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  mutate_at(vars(pitches, timbre), map, bind_rows) |>
+  unnest(cols = c(pitches, timbre))
 
-library(purrr)
+###ALLES HIERONDER NOG SORTEREN/OPRUIMEN!!!
 
 # Define the function to create a mapbjc track
 create_mapbjc_track <- function(track_id) {
@@ -211,9 +216,206 @@ mapbjc6 <- create_mapbjc_track("4JRtsjsSqunh2ILro1EAhH")
 mapbjc7 <- create_mapbjc_track("0EOT1qmisxEi2MDJ6DaWHT")
 mapbjc10 <- create_mapbjc_track("18KH1UVb7HMWaesDkTsyhS")
 
+#confusion matrix, i do not have to do this
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit |> 
+    collect_predictions() |> 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+get_pr <- function(fit) {
+  fit |> 
+    conf_mat_resampled() |> 
+    group_by(Prediction) |> mutate(precision = Freq / sum(Freq)) |> 
+    group_by(Truth) |> mutate(recall = Freq / sum(Freq)) |> 
+    ungroup() |> filter(Prediction == Truth) |> 
+    select(class = Prediction, precision, recall)
+}  
 ```
 
-### week 11 
+
+```{r}
+### week 12
+corpus433complete <-
+  get_playlist_audio_features("bnfcollection", "3ItGc1nDDikyt9X1MgYwGi") |>
+  add_audio_analysis() |>
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) |>
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) |>
+  mutate_at(vars(pitches, timbre), map, bind_rows) |>
+  unnest(cols = c(pitches, timbre))
+
+# Assuming 'corpus433complete' is your dataset containing multiple versions of the same song
+# Assuming you have a column named 'track.name' indicating the name of each track
+
+# Create a new column for track numbers
+corpus433complete$track_number <- 1
+
+# Group the dataset by track.name and increment track_number within each group
+corpus433complete <- within(corpus433complete, {
+  track_number <- ave(track_number, track.name, FUN = seq_along)
+})
+
+# Add a new column with unique track names based on the track name and track number
+# corpus433complete$unique_track_name <- paste0(corpus433complete$track.name, "_", corpus433complete$track_number)
+corpus433complete$unique_track_name <- corpus433complete$track.uri
+
+# Now you can proceed with creating 'corpus433complete_juice'
+corpus433complete_juice <- recipe(
+  unique_track_name ~
+    danceability +
+    energy +
+    loudness +
+    speechiness +
+    acousticness +
+    instrumentalness +
+    liveness +
+    valence +
+    tempo +
+    duration +
+    C + `C#|Db` + D + `D#|Eb` +
+    E + `F` + `F#|Gb` + G +
+    `G#|Ab` + A + `A#|Bb` + B +
+    c01 + c02 + c03 + c04 + c05 + c06 +
+    c07 + c08 + c09 + c10 + c11 + c12,
+  data = corpus433complete
+) |>
+step_center(all_predictors()) |>
+step_scale(all_predictors()) |> 
+prep() |>
+juice() |>
+column_to_rownames("unique_track_name")
+
+#grower's manhattan is prettier
+corpus433complete_dist <- dist(corpus433complete_juice, method = "manhattan")
+```
+
+### Hierarchical clustering week 12
+
+```{r}
+corpus433complete_dist |> 
+  hclust(method = "single") |> # Try single, average, and complete.
+  dendro_data() |>
+  ggdendrogram()
+
+corpus433complete_dist |> 
+  hclust(method = "average") |> # Try single, average, and complete.
+  dendro_data() |>
+  ggdendrogram()
+
+corpus433complete_dist |> 
+  hclust(method = "complete") |> # Try single, average, and complete.
+  dendro_data() |>
+  ggdendrogram()
+```
+
+***
+For my Portfolio, I am researching multiple versions of 4'33''. It is not possible to have a duplicate name in the code, that is why I had to change the code. What you are seeing now, are the URI's of the songs. Some versions has apparently different URI's, even though it is from the exact same album. Here is the URI and tracklist:
+
+4’33’’ ‘URI’ on track order in my playlist:
+1. 2bNCdW4rLnCTzgqUXTTDO1 4’33’’; John Cage (original)
+2. 0lBcxdmI4HC47zEsRSKrty 4’33’’; Floraleda Sacchi
+3. 647hR0e3Rp07l8MtPSMu2s 4’33’’; John Cage, Khatia Buniatishvili
+4. 21UVJ8oU61i9anMWeihNaK 4’33’’; John Cage, Cláudio de Pina
+5. 4rmfp2gYxSk5YrlCPVOdxc 4’33’’; Los Barenboim
+6. 4HUPiqipTQrGEyINwBkws7 4’33’’; Lord Of The Lost
+7. 1OLtteOhDml54bhUZ52R83 4’33’’; Simon Pfisterer
+8. 4X0q9ZYvxys3SOZ5oRGfiI  4’33’’; Vítor Rua
+9. 5ErWipeiIGzWbLiKm4IY3l 4’33’’:4’33; John Cage, Amadinda Percussion Group (2 URI’s, 1st one) 
+10. 1SXr2VaU6bdVjzGx0BPixm 4’33’’; The Normal
+11. 0hiBug8osiqLDdbz5G6YWc 4’ 33’’; John Cage, Julie Steinberg
+12. 5B7HHrAsopOgp3wjP0PMgT 4’33’’ Cage Against the Machine Version; John Cage
+13. 5r9yyfY10OtM7yduliCNGO 4’ 33’’; John Cage, Julie Steinberg, The Audience (3 different URI’s, 1st one)
+14. 4F76YbFSTzXboAKhyypE7a 4.33; John Cage
+15. 7ybfuJrKqm2BvdNa7HvZeV 4’33’’ (John Cage); John Cage, Enno Voorhorst
+16. 258jYnAoeGhCkWJNPsLkZV 4’ 33’’; John Cage, Susanne Kessel
+17. 50BjVN5UcKt5sfUIbKcphZ 4’33’’ (John Cage); John Cage, Michael Koehler
+18. 2PNYl1F6FqTsXh8KfLVPar 4’ 33’’; John Cage, Julie Steinberg, The Audience (3 different URI’s, 2nd one)
+19. 3zD4FdmDMZfn4lcLVihLvB 4’ 33’’; John Cage, Susanne Kessel 
+20. 6igC1QpBYnJfXbAryAwl1H 4’ 33’’; John Cage, Julie Steinberg (3 different URI’s, 3rd one)
+21. 3ihJwbgyRVF97On9HlRpHX 4.33; John Cage, Paata Beridze
+22. 0YAS6w9qX25EtU4NzW1DUz 4’33’’:4’33’’ - I; John Cage, Ezio Bosso
+23. 79UBz1H7T0DxomzwCuASow 4’33’’:4’33’’ - II; John Cage, Ezio Bosso
+24. 1Y5v7QUdVgwkVdVP62QlFK 4’33’’:4’33’’ - III; John Cage, Ezio Bosso
+25. 7wkeyVfZ1olD5VabaHvNu0 4’33’’: I. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger
+26. 1jlBp8wTbaw67jGaTmDFZ3  4’33’’: II. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger
+27. 1WzhWhNJXHIwptZvMzs9bh  4’33’’: III. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger
+28. 0SdGIygJRmHIseHmPGPEKg 4’33’’: I. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (other length, same name; other URI's)
+29. 7tQdWcrHiUizkKAgGgmyew 4’33’’: II. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (other length, same name; other URI's)
+30. 4kqeZgUPJE3M5QGjQJnl4Z 4’33’’: III. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (other length, same name; other URI's)
+31. 7oY6XfEY0uZIzvniSnP3mi 4’33’’: I. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same length as first one, same name, other songs; other URI's)
+32. 65RoaBdRHcxPfESGUcxQkI 4’33’’: II. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same length as first one, same name, other songs; other URI's)
+33. 4J9yKjXnqFVNBQ5czUHQUB 4’33’’: III. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same length as first one, same name, other songs; other URI's)
+34. 3kKpPtoHcUvdVIKiKnuEeZ 4’33’’: I. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same as ‘other length’, same name, other song; other URI's)
+35. 5tEKAeircCx1qQscqKokDS 4’33’’: II. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same as ‘other length’, same name, other song; other URI's)
+36. 0tppfd8DLVgzzwX8hCaVoe 4’33’’: III. —; John Cage, Tobias Rüger, Reimar Volker, Ulrich Krieger (same as ‘other length’, same name, other song; other URI's)
+37. 0AQRAsPtKDHCv369ktkp3x 4’33 - Adam F`S Club Mix - Cage Against The Machine Version; John Cage
+38. 3jb5L9viOhEoYuVbfpvlhA 4’33 - Herve Tidies His Studio Mix - Cage Against The Machine; John Cage
+39. 4JRtsjsSqunh2ILro1EAhH 4’33’ - Alex Metric Enters the Batcave Mix - Cage Against The Machine; John Cage
+40. 0EOT1qmisxEi2MDJ6DaWHT Fake Blood`S Needle Drop Mix - Cage Against The Machine; John Cage
+41. 0eBgJxMleTWezJZPciCqdO Aeroplane’s 5`33` Mix - Cage Against The Machine; John Cage
+42. 52QLogPTXh3KJI7JwjG2vP 4’33 - Japanese Popstar Watch Family Guy on Mute Mix - Cage Against The Machine; John Cage
+43. 18KH1UVb7HMWaesDkTsyhS Calm Before the Storm - Remix by Mr Scruff - Cage Against The Machine; John Cage
+44. 2XeCgpnODCLZayjtUmPZcc 4’33 No. 2: 0’00’’; John Cage, Langham Research Centre
+45. 0TBxRgdH4bmEfoFQurMCrU 433 (In tre parti: 30 / 223 / 140) (1952) - Instrumental; John Cage, Walter Marchetti, Gianni Emilio Simonetti
+46. 5JF9OovVNaQWibrsNcVixy 4’ 33’’ for 2 pianos; John Cage, Gerardo Herrera-Benavides
+47. 4JxtqYIeGkq5ZPUtQWeQyN 4:33 (A Tribute to John Cage); Nils Frahm
+48. 1Y6ed0uUifbNh4ZUmXNSt2 4’ 33’’-1 Tacet; John Cage, Wayne Marshall
+49. 2unAy6PPNuFzYLXTj8V2r4 4’ 33’’-I Tacet; John Cage, Wayne Marshall
+50. 0am5yMtWZuu6hUahyDgx3K 4’33’’:4’33; John Cage, Amadinda Percussion Group (2 URI’s, 2nd one) 
+51. 2bFtFA1xbOk1MWmHYJybGK 433 (In tre parti: 30 / 223 / 140) (1952) - Instrumental; John Cage, Walter Marchetti, Gianni Emilio Simonetti (other URI’s)
+52. 3GkR4zJNN8vpDDU6b3mSXe 4’33’’ (Excerpt); John Cage, Stephanie McCallum
+53. 2EDGPmjHG8aH6FPRIz5oHL 4 Minuten 33 Sekunden; John Cage, Florian Klaus Rumpf
+
+
+
+
+### Heatmaps week 12
+
+
+```{r}
+#single
+heatmaply(
+  corpus433complete_juice,
+  hclustfun = hclust,
+  hclust_method = "single",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+#average
+heatmaply(
+  corpus433complete_juice,
+  hclustfun = hclust,
+  hclust_method = "average",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+#complete
+heatmaply(
+  corpus433complete_juice,
+  hclustfun = hclust,
+  hclust_method = "complete",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+```
+
+***
+It seems like that the 3 different techniques ended up making the same heatmap. I cannot really explain why. I think the dendogram does a better job explaining it to me. That is why I will use the dendogram.
+
+
+### Novelty functions week 11 
+
+
 ```{r}
 mapbjc1.0 <-
   get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1") |>
@@ -258,7 +460,14 @@ mapbjc1.0 |>
   labs(x = "Time (s)", y = "Novelty")
 
 mapbjc1.0 <- get_tidy_audio_analysis("2bNCdW4rLnCTzgqUXTTDO1")
+```
 
+
+
+### Tempogram week 11
+
+
+```{r}
 mapbjc1.0 |>
   tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) |>
   ggplot(aes(x = time, y = bpm, fill = power)) +
@@ -278,7 +487,7 @@ mapbjc1.0|>
 ```
 
 ***
-All of these plot are 4'33'' of John Cage (the original version). The tempogram is also of the same song. It is interesting to see that Rstudios can see a tempo? Even though it is silence. Is there anyone who have an idea how this is possible?
+All of these plot are 4'33'' of John Cage (the original version). The tempogram is also of the same song. It is interesting to see that Rstudios can see a tempo? Even though it is silence. Is there anyone who have an idea how this is
 
 
 ### Introduction
